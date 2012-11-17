@@ -48,14 +48,14 @@ print "Use exec set-semaphore? [no] ";
 chomp ($var = <>);
 if ($var) { $semaphore=1; }
 
-#get_packages;
+get_packages();
 
-#print Dumper (%resources);
+print Dumper (%resources);
 
 #
 # get "package" resources and all metaparameters
 #
-#sub get_packages {
+sub get_packages {
     my $pname, $ensure, @require, @before;
     my $var;
 
@@ -76,7 +76,8 @@ if ($var) { $semaphore=1; }
             print "before => ";
             chomp ($var = <>);
         }
-        $resources  {'package'} -> {$pname} -> {'before'} = @before;
+        $resources  {'package'} -> {$pname} -> {'before'} = 
+            join (" ", @before);
 
         print "require => ";
         chomp ($var = <>);
@@ -86,10 +87,10 @@ if ($var) { $semaphore=1; }
             print "require => ";
             chomp ($var = <>);
         }
-        $resources  {'package'} -> {$pname} -> {'require'} = @require;
+        $resources  {'package'} -> {$pname} -> {'require'} = 
+            join (" ", @require);
 
         print "Package name? ";
         chomp ($pname = <>);
     }
-#}
-print Dumper (%resources);
+}
