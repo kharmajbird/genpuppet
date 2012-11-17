@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#define RABBIT 7
 FILE *fp;
-char top_requires[30][7];
-char all_requires[30][7];
-char top_includes[30][7];
-char all_includes[30][7];
+char top_requires[30][RABBIT];
+char all_requires[30][RABBIT];
+char top_includes[30][RABBIT];
+char all_includes[30][RABBIT];
 int nullmailer=0;
 int setsemaphore=0;
 
@@ -22,6 +23,8 @@ extern void end_exec ();
 main (int argc, char ** argv) {
     char manifest[20];
     char classname[20];
+    char req[30];
+    int i;
 
     printf("Name of manifest: ", manifest);
     scanf("%s", manifest);
@@ -35,7 +38,20 @@ main (int argc, char ** argv) {
     printf("Opening %s for writing...\n\n", manifest);
     printf("Name of class: ");
     scanf("%s", classname);
-    printf("Require? ");
+
    
+    for (i = 0; i < RABBIT; i++) {
+        printf("Require? ");
+        fgets(req, 30, stdin);
+
+        if (*req == '\0') break;
+
+        strcpy(top_requires[i], req);
+    }
+
+    for (i = 0; i < RABBIT; i++) {
+       printf("%s\n", top_requires[i]);
+    }
+    
     fclose(fp);
 }
