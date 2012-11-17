@@ -80,6 +80,22 @@ if ($nullmailer) {
 
 # write package stanzas
 
+
+foreach my $var (reverse keys $resources {'package'}) {
+    printf FP "    package '$var': {\n";
+    printf FP "        ensure => $var{ensure},\n";
+
+    if ($var{before}) {
+        printf FP "        before => [\n";
+        printf FP "            $var{before},\n";
+        printf FP "        ],\n";
+    }
+    printf FP "    }\n\n";
+}
+
+
+
+
 # write end class
 printf FP "}\n";
 
