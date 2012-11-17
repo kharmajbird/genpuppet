@@ -1,9 +1,12 @@
 #!/usr/bin/perl
 
-my %resources;
-my @requires, @includes;
-my $manifest, $classname;
-my $var, $include=0, $nullmailer=0, $semaphore=0;
+use Data::Dumper;
+
+our %resources;
+our @requires, @includes;
+our $manifest, $classname;
+our $include=0, $nullmailer=0, $semaphore=0;
+my $var;
 
 
 
@@ -45,3 +48,48 @@ print "Use exec set-semaphore? [no] ";
 chomp ($var = <>);
 if ($var) { $semaphore=1; }
 
+#get_packages;
+
+#print Dumper (%resources);
+
+#
+# get "package" resources and all metaparameters
+#
+#sub get_packages {
+    my $pname, $ensure, @require, @before;
+    my $var;
+
+    print "Package name? ";
+    chomp ($pname = <>);
+
+    while ($pname) {
+        print "ensure => ";
+        chomp ($var = <>);
+
+        $resources  {'package'} -> {$pname} -> {'ensure'} = $var;
+
+        print "before => ";
+        chomp ($var = <>);
+        while ($var) {
+            push (@before, $var);
+
+            print "before => ";
+            chomp ($var = <>);
+        }
+        $resources  {'package'} -> {$pname} -> {'before'} = @before;
+
+        print "require => ";
+        chomp ($var = <>);
+        while ($var) {
+            push (@require, $var);
+
+            print "require => ";
+            chomp ($var = <>);
+        }
+        $resources  {'package'} -> {$pname} -> {'require'} = @require;
+
+        print "Package name? ";
+        chomp ($pname = <>);
+    }
+#}
+print Dumper (%resources);
