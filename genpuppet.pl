@@ -58,16 +58,16 @@ open FP, ">$manifest";
 printf FP "class $classname {\n";
 
 while (@requires) {
-    $val = shift (@requires);
+    my $req = shift (@requires);
 
-    printf FP "    require $var\n";
+    printf FP "    require $req\n";
 }
 printf FP "\n";
 
 while (@includes) {
-    $val = shift (@includes);
+    my $inc = shift (@includes);
 
-    printf FP "    include $var\n";
+    printf FP "    include $inc\n";
 }
 printf FP "\n";
 
