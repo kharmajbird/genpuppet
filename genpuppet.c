@@ -1,6 +1,14 @@
 #include <stdio.h>
+#include <string.h>
 
 FILE *fp;
+char top_requires[30][7];
+char all_requires[30][7];
+char top_includes[30][7];
+char all_includes[30][7];
+int nullmailer=0;
+int setsemaphore=0;
+
 
 extern void begin_package ();
 extern void end_package ();
@@ -12,17 +20,22 @@ extern void begin_exec ();
 extern void end_exec ();
 
 main (int argc, char ** argv) {
-   char manifest[20];
+    char manifest[20];
+    char classname[20];
 
-   printf ("Manifest name: [%s] ", manifest);
-   scanf ("%s", manifest);
+    printf("Name of manifest: ", manifest);
+    scanf("%s", manifest);
 
-   if (manifest == "") manifest = "init.pp";
 
-   if ((fp = fopen (manifest, "w")) == NULL) {
-       printf ("Error writing to %s... exiting\n", manifest);
-       exit (1);
-   }
+    if ((fp = fopen (manifest, "w")) == NULL) {
+        printf ("Error writing to %s... exiting\n", manifest);
+        return (1);
 
-   fclose(fp);
+    }
+    printf("Opening %s for writing...\n\n", manifest);
+    printf("Name of class: ");
+    scanf("%s", classname);
+    printf("Require? ");
+   
+    fclose(fp);
 }
