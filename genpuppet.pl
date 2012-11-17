@@ -50,6 +50,42 @@ if ($var) { $semaphore=1; }
 
 get_packages();
 
+
+
+
+open FP, ">$manifest";
+
+printf FP "class $classname {\n";
+
+while (@requires) {
+    $val = shift (@requires);
+
+    printf FP "    require $var\n";
+}
+printf FP "\n";
+
+while (@includes) {
+    $val = shift (@includes);
+
+    printf FP "    include $var\n";
+}
+printf FP "\n";
+
+if ($nullmailer) {
+    printf FP "    class 'nullmailer': {\n";
+    printf FP "        admin => jlewis@pavlovmedia.com,\n";
+    printf FP "        relay => mail@pavlovmedia.com,\n";
+    printf FP "    }\n\n";
+}
+
+# write package stanzas
+
+# write end class
+printf FP "}\n";
+
+close FP;
+
+
 print Dumper (%resources);
 
 #
