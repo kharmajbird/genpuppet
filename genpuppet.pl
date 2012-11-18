@@ -83,25 +83,6 @@ if ($nullmailer) {
 
 # write package stanzas
 
-#$VAR1 = 'package';
-#$VAR2 = {
-#          'pack1' => {
-#                       'require' => 'everything',
-#                       'ensure' => 'yes',
-#                       'before' => 'nothing'
-#                     }
-#        };
-#class myclass {
-#    require none
-#
-#
-#    package 'pack1': {
-#        ensure => ,
-#    }
-#
-#}
-
-
 
 foreach my $var (reverse keys $resources {'package'}) {
     printf FP "    package { '$var':\n";
@@ -156,8 +137,8 @@ sub get_packages {
             print "before => ";
             chomp ($var = <>);
         }
-        $resources  {'package'} -> {$pname} -> {'before'} = 
-            join (" ", @before);
+        #$resources  {'package'} -> {$pname} -> {'before'} = \@before;
+        $resources  {'package'} -> {$pname} -> {'before'} = @before;
 
         print "require => ";
         chomp ($var = <>);
@@ -167,8 +148,8 @@ sub get_packages {
             print "require => ";
             chomp ($var = <>);
         }
-        $resources  {'package'} -> {$pname} -> {'require'} = 
-            join (" ", @require);
+        #$resources  {'package'} -> {$pname} -> {'require'} = \@require;
+        $resources  {'package'} -> {$pname} -> {'require'} = @require;
 
         print "Package name? ";
         chomp ($pname = <>);
