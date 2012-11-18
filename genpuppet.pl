@@ -78,16 +78,44 @@ if ($nullmailer) {
     printf FP "    }\n\n";
 }
 
+
+
+
 # write package stanzas
+
+#$VAR1 = 'package';
+#$VAR2 = {
+#          'pack1' => {
+#                       'require' => 'everything',
+#                       'ensure' => 'yes',
+#                       'before' => 'nothing'
+#                     }
+#        };
+#class myclass {
+#    require none
+#
+#
+#    package 'pack1': {
+#        ensure => ,
+#    }
+#
+#}
+
 
 
 foreach my $var (reverse keys $resources {'package'}) {
-    printf FP "    package '$var': {\n";
-    printf FP "        ensure => $var{ensure},\n";
+    printf FP "    package { '$var':\n";
+    printf FP "        ensure => $resources{'package'}{$var}{'ensure'},\n";
 
-    if ($var{before}) {
+    if ($resources{'package'}{$var}{'before'}) {
+        my @ary = $resources{'package'}{$var}{'before'};
+
         printf FP "        before => [\n";
-        printf FP "            $var{before},\n";
+
+        while (@ary) {
+            my $bf = shift (@ary);
+            printf FP "            $bf,\n";
+        }
         printf FP "        ],\n";
     }
     printf FP "    }\n\n";
