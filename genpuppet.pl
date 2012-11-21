@@ -24,6 +24,8 @@ printf FP "class $classname {\n";
 do_toplevel();
 get_packages();
 write_packages();
+get_files();
+write_files();
 
 # write end class
 #
@@ -105,7 +107,7 @@ sub get_packages {
     chomp ($pname = <>);
 
     while ($pname) {
-        my @before, @require;
+        my @before = (), @require = ();
 
         print "ensure => ";
         chomp ($var = <>);
@@ -178,6 +180,109 @@ sub write_packages {
             }
             printf FP "        ],\n";
         }
-        printf FP "    }\n\n";
+        printf FP "    }\n";
+    }
+}
+
+
+#       
+# get all file resources and their metaparameters
+#       
+sub get_files {
+    my $fname, $ensure;
+    my $var;
+
+    print "File path? ";
+    chomp ($fname = <>);
+
+    while ($fname) {
+        my @before = (), @require = ();
+
+        print "ensure => ";
+        chomp ($resources{'file'}->{$fname}->{'ensure'} = <>);
+
+        print "owner => ";
+        chomp ($resources{'file'}->{$fname}->{'owner'} = <>);
+
+        print "group => ";
+        chomp ($resources{'file'}->{$fname}->{'group'} = <>);
+
+        print "mode => ";
+        chomp ($resources{'file'}->{$fname}->{'mode'} = <>);
+
+        print "source => ";
+        chomp ($resources{'file'}->{$fname}->{'source'} = <>);
+
+        print "content => ";
+        chomp ($resources{'file'}->{$fname}->{'content'} = <>);
+ 
+        print "before => ";
+        chomp ($var = <>);
+        while ($var) {
+            push (@before, $var);
+                
+            print "before => ";        
+            chomp ($var = <>);
+        }   
+        if (@before) {
+            @{ $resources{'file'}->{$fname}->{'before'} } = @before;
+        } 
+        
+        print "require => ";
+        chomp ($var = <>);
+        while ($var) {
+            push (@require, $var);
+            
+            print "require => ";
+            chomp ($var = <>);         
+        }   
+        if (@require) {        
+            @{ $resources{'file'}->{$fname}->{'require'} } = @require;
+        }
+   
+        print "File path? ";
+        chomp ($fname = <>);
+    }
+} 
+
+#
+# write file stanzas
+#
+sub write_files {
+    foreach my $var (reverse keys %{ $resources{'file'} }) {
+        printf FP "    file { '$var':\n";
+        printf FP "        ensure => '$resources{'file'}{$var}{'ensure'}',\n";
+        printf FP "        owner => '$resources{'file'}{$var}{'owner'}',\n";
+        printf FP "        group => '$resources{'file'}{$var}{'group'}',\n";
+        printf FP "        mode => '$resources{'file'}{$var}{'mode'}',\n";
+        printf FP "        source => '$resources{'file'}{$var}{'source'}',\n";
+        printf FP "        content => $resources{'file'}{$var}{'content'},\n";
+
+        # do before =>
+        #
+        if ($resources{'file'}{$var}{'before'}) {
+            my @ary = @{ $resources{'file'}{$var}{'before'} };
+
+            printf FP "        before => [\n";
+            while (@ary) {
+                my $bf = shift (@ary);
+                printf FP "            $bf,\n";
+            }
+            printf FP "        ],\n";
+        }
+
+        # do require =>
+        #
+        if ($resources{'file'}{$var}{'require'}) {
+            my @ary = @{ $resources{'file'}{$var}{'require'} };
+
+            printf FP "        require => [\n";
+            while (@ary) {
+                my $bf = shift (@ary);
+                printf FP "            $bf,\n";
+            }
+            printf FP "        ],\n";
+        }
+        printf FP "    }\n";
     }
 }
