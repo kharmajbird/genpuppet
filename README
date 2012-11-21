@@ -1,2 +1,4 @@
 genpuppet is a program to automatically generate puppet manifests based on
-a series of user inputs.  Think of a kernel "make config" for puppet.
+a series of user inputs.
+
+Think of a kernel "make config" for puppet.
