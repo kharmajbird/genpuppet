@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
 use Data::Dumper;
-use Warnings;
 
 our %resources;
 our @requires, @includes;

@@ -1,4 +1,70 @@
 genpuppet is a program to automatically generate puppet manifests based on
-a series of user inputs.
+a series of user inputs.  Think of a kernel "make config" for puppet.
 
-Think of a kernel "make config" for puppet.
+
+
+== command line user input ==
+
+# ./genpuppet.pl
+Name of manifest? init.pp
+Name of class? myclass
+Top level require? first
+Top level require?
+Top level include? incl1
+Top level include? incl2
+Top level include?
+Use class nullmailer? [no] yes
+adminaddr => foo@bar.com
+remoterelay => foor@mail.com
+Use exec set-semaphore? [no]
+Package name? pack1
+ensure => latest
+before => Exec['do-pkgstuff']
+before => File['/etc/foo']
+before =>
+require => Package['sub']
+require =>
+Package name? pack2
+ensure => installed
+before =>
+require => File['alpha']
+require => Class['ntp']
+require =>
+Package name?
+
+
+== generated manuscript ==
+
+# cat init.pp
+class myclass {
+    require first
+
+    include incl1
+    include incl2
+
+    class { 'nullmailer':
+        adminaddr => 'foo@bar.com',
+        remoterelay => 'foor@mail.com',
+    }
+
+    package { 'pack1':
+        ensure => latest,
+        before => [
+            Exec['do-pkgstuff'],
+            File['/etc/foo'],
+        ],
+        require => [
+            Package['sub'],
+        ],
+    }
+
+    package { 'pack2':
+        ensure => installed,
+        require => [
+            Package['sub'],
+            File['alpha'],
+            Class['ntp'],
+        ],
+    }
+
+}
