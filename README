@@ -1,70 +1,51 @@
-genpuppet is a program to automatically generate puppet manifests based on
-a series of user inputs.  Think of a kernel "make config" for puppet.
+genpuppet is a script to automatically generate a puppet manifest based on
+a series of user inputs.  Think of it as a kernel "make config" for puppet.
+
+With genpuppet, one can quickly create a custom manifest without worrying
+so much about syntax and spacing.
+
+Save the time you would normally spend writing a manifest from scratch and 
+use that time to debug that circular dependency you've been putting off ;)
 
 
 
-== command line user input ==
+GENPUPPET
 
-# ./genpuppet.pl
-Name of manifest? init.pp
-Name of class? myclass
-Top level require? first
-Top level require?
-Top level include? incl1
-Top level include? incl2
-Top level include?
-Use class nullmailer? [no] yes
-adminaddr => foo@bar.com
-remoterelay => foor@mail.com
-Use exec set-semaphore? [no]
-Package name? pack1
-ensure => latest
-before => Exec['do-pkgstuff']
-before => File['/etc/foo']
-before =>
-require => Package['sub']
-require =>
-Package name? pack2
-ensure => installed
-before =>
-require => File['alpha']
-require => Class['ntp']
-require =>
-Package name?
+Features:
+
+*  Creates resource "stanzas" for package, service, file, and exec
+*  Prompts for the most common metaparameters of those resources
+*  Manages commas and bracket/brace placement for you
+*  Generates puppet code that is immediately useable
 
 
-== generated manuscript ==
+Shortcomings:
 
-# cat init.pp
-class myclass {
-    require first
+*  Single quotes are used exclusively.
 
-    include incl1
-    include incl2
+   If you need to quote a variable, edit the generated manifest and replace 
+   the single quotes around your variable with double quotes.
 
-    class { 'nullmailer':
-        adminaddr => 'foo@bar.com',
-        remoterelay => 'foor@mail.com',
-    }
 
-    package { 'pack1':
-        ensure => latest,
-        before => [
-            Exec['do-pkgstuff'],
-            File['/etc/foo'],
-        ],
-        require => [
-            Package['sub'],
-        ],
-    }
+*  Many resources are still unsupported.
 
-    package { 'pack2':
-        ensure => installed,
-        require => [
-            Package['sub'],
-            File['alpha'],
-            Class['ntp'],
-        ],
-    }
+   Only the basic resources are currently handled, such as the ones you 
+   might find on a cheat sheet.  Nothing prevents me or anyone else from 
+   extending genpuppet to handle any other resource type except...
 
-}
+
+*  The code is nothing to write home about.  
+
+   It gets the job done, that's it.  Perl enthusiasts may cringe at some 
+   of my barbaric techniques, and there is a lot of near-duplication of
+   code.  I'm sure there is a better, more slick way of accomplishing this
+   by using parameters, but it already works for me and it didn't take
+   long to write.  If I find I want to add another resource, however, I
+   will be looking at and taking suggestions for how to make the script
+   more efficient.
+
+
+I encourage the puppet community to contribute their suggestions and
+changes for this project.  Genpuppet has the potential to become a very useful 
+and robust tool within a puppetmaster's kit.  The basics are already here, 
+but there is a lot more that can be done to make it a better tool.
