@@ -1,0 +1,175 @@
+This example is a transcript of a single run of genpuppet.
+
+Each line is a question and an answer separated by either a "?" or "=>".
+See how it simply prompts for user input, and stores the results in
+a hash of hashes similar to:  
+
+%{ $resource{'package'}{$package_name}{'metaparameter'} }
+
+It doesn't matter what you enter for each prompt, but if you want working
+puppet code to be generated, you may wish to enter something syntactically 
+correct :)
+
+
+
+== command line user input ==
+
+# ./genpuppet.pl
+Name of manifest? init.pp
+Name of class? myclass
+Top level require? first
+Top level require?
+Top level include? incl1
+Top level include? incl2
+Top level include?
+Use class nullmailer? [no] yes
+adminaddr => foo@bar.com
+remoterelay => foor@mail.com
+Use exec set-semaphore? [no]
+Package name? pack1
+ensure => latest
+before => Exec['do-pkgstuff']
+before => File['/etc/foo']
+before =>
+require => Package['sub']
+require =>
+Package name? pack2
+ensure => installed
+before =>
+require => File['alpha']
+require => Class['ntp']
+require =>
+Package name?
+Service name? ntp
+ensure => running
+before => 
+require => puppet           
+require => Service['puppetmaster']
+require => 
+Service name? cron
+ensure => stopped
+before => ntpservice
+before => Exec['something']
+before => 
+require => kitchen
+require => sink
+require => 
+Service name? 
+File path? /etc/sudoers
+ensure => file
+owner => root
+group => root
+mode => 0400
+source => our source path
+content => 
+before => Service['ntp']
+before => 
+require => 
+File path? 
+Exec name? apt-update
+command => apt-get update
+logoutput => yes
+onlyif => test -f /tmp/flag
+unless => 
+creates => 
+before => 
+require => Service['ntp']  
+require => another service
+require => 
+Exec name? apt-upgrade
+command => apt-get upgrade
+logoutput => no
+onlyif => 
+unless => 
+creates => /tmp/foo
+before => one run
+before => second run
+before => 
+require => 
+Exec name?
+
+
+
+== generated manuscript ==
+
+# cat init.pp
+class myclass {
+    require first
+
+    include incl1
+    include incl2
+
+    class { 'nullmailer':
+        adminaddr => 'foo@bar.com',
+        remoterelay => 'foor@mail.com',
+    }
+
+    package { 'pack1':
+        ensure => latest,
+        before => [
+            Exec['do-pkgstuff'],
+            File['/etc/foo'],
+        ],
+        require => [
+            Package['sub'],
+        ],
+    }
+
+    package { 'pack2':
+        ensure => installed,
+        require => [
+            Package['sub'],
+            File['alpha'],
+            Class['ntp'],
+        ],
+    }
+
+    service { 'cron':
+        ensure => stopped,
+        before => [
+            ntpservice,
+            Exec['something'],
+        ],
+        require => [
+            kitchen,
+            sink,
+        ],
+    }
+    service { 'ntp':
+        ensure => running,
+        require => [
+            puppet,
+            Service['puppetmaster'],
+        ],
+    }
+
+    file { '/etc/sudoers':
+        ensure => 'file',
+        owner => 'root',
+        group => 'root',
+        mode => '0400',
+        source => 'our source path',
+        before => [
+            Service['ntp'],
+        ],
+    }
+
+    exec { 'apt-upgrade':
+        command => 'apt-get upgrade',
+        logoutput => 'no',
+        creates => '/tmp/foo',
+        before => [
+            one run,
+            second run,
+        ],
+    }
+    exec { 'apt-update':
+        command => 'apt-get update',
+        logoutput => 'yes',
+        onlyif => 'test -f /tmp/flag',
+        require => [
+            Service['ntp'],
+            another service,
+        ],
+    }
+}
