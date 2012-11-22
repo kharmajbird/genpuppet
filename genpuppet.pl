@@ -58,7 +58,7 @@ sub do_toplevel {
 
         printf FP "    require $inc\n";
     }
-    printf FP "\n";
+    if (@requires) { printf FP "\n"; }
 
 
     print "Top level include? ";
@@ -74,7 +74,7 @@ sub do_toplevel {
 
         printf FP "    include $inc\n";
     }
-    printf FP "\n";
+    if (@includes) { printf FP "\n"; }
 
 
     print "Use class nullmailer? [no] ";
@@ -91,12 +91,8 @@ sub do_toplevel {
         printf FP "    }\n\n";
     }
 
-
     print "Use exec set-semaphore? [no] ";
     chomp ($var = <>);
-
-    # need to handle this just before the end of the class"
-    #
     if ($var) { $semaphore=1; }
 }
 # end do_toplevel()
