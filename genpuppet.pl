@@ -183,7 +183,7 @@ sub write_packages {
         }
         printf FP "    }\n";
     }
-    printf FP "    }\n\n";
+    printf FP "\n\n";
 }
 # end write_packages()
 
@@ -268,7 +268,7 @@ sub write_services {
         }
         printf FP "    }\n";
     }
-    printf FP "    }\n\n";
+    printf FP "\n\n";
 }
 # end write_services()
 
@@ -394,7 +394,7 @@ sub write_files {
         }
         printf FP "    }\n";
     }
-    printf FP "    }\n\n";
+    printf FP "\n\n";
 }
 # end write_files()
 
@@ -511,7 +511,7 @@ sub write_execs {
         }
         printf FP "    }\n";
     }
-    printf FP "    }\n\n";
+    printf FP "\n\n";
 }
 # end write_execs()
 
