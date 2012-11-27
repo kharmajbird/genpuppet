@@ -2,21 +2,16 @@
 
 use Data::Dumper;
 
-our %types, %resources;
-our @figs, @requires, @includes;
+our %resources;
+our @requires, @includes;
 our $manifest, $classname;
 our $include=0, $nullmailer=0, $semaphore=0;
-my $var, $figfile = "./genpuppet.conf";
-my @atomic = 
-    [ 'ensure', 'mode', 'owner', 'group', 'source', 'content', 'logoutput' ];
-
-my @metaparms = [ 'before', 'require' ];
+my $var;
 
 
 #
 # start genpuppet.pl
 #
-
 
 print "Name of manifest? ";
 chomp ($manifest = <>);
@@ -26,41 +21,21 @@ print "Name of class? ";
 chomp ($classname = <>);
 printf FP "class $classname {\n";
 
-@figs = load_config();
-
 do_toplevel();
-get_types();
-write_manifest();
-
-#get_packages();
-#write_packages();
-#get_services();
-#write_services();
-#get_files();
-#write_files();
-#get_execs();
-#write_execs();
-
+get_packages();
+write_packages();
+get_services();
+write_services();
+get_files();
+write_files();
+get_execs();
+write_execs();
 write_swatch();
 
 # write end class
 #
 printf FP "}\n";
 close FP;
-
-
-#
-#
-#
-sub load_config {
-    my @art;
-
-    open (FIGS, "$figfile") || die ("Error opening $figfile\n");
-    @art = <FIGS>;
-    close (FIGS);
-    return (@art);
-}
-
 
 
 #
@@ -535,78 +510,6 @@ sub write_execs {
     printf FP "\n\n";
 }
 # end write_execs()
-
-
-
-
-#
-#
-#
-sub get_types {
-    my $fname, $var;
-
-
-
-    print "File path? ";
-    chomp ($fname = <>);
-
-    while (@figs) {
-        my @before = (), @require = ();
-        my $line = shift (@figs);
-        my @x = split (": ", $line);
-        my $type = @x[0];
-        my @params = split (", ", @x[1]);
-
-        print "$type => ";
-        my $resp = chomp(<>);
-
-        while (@params) {
-        my $p = shift (@params);
-# if params in atomic, do
-
-        $resources{$type}->{$resp}->{$p} = $resp;
-
-# if params ! in atomic, do
-
- 
-        print "before => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@before, $var);
-                
-            print "before => ";        
-            chomp ($var = <>);
-        }   
-        if (@before) {
-            @{ $resources{'file'}->{$fname}->{'before'} } = @before;
-        } 
-        
-        print "require => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@require, $var);
-            
-            print "require => ";
-            chomp ($var = <>);         
-        }   
-        if (@require) {        
-            @{ $resources{'file'}->{$fname}->{'require'} } = @require;
-        }
-   
-        print "File path? ";
-        chomp ($fname = <>);
-    }
-} # end get_types()
-
-
-
-#
-#
-#
-sub write_manifest {
-} # end write_manifest()
-
-
 
 #
 #
