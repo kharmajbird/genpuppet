@@ -8,7 +8,7 @@ our $manifest, $classname;
 our $include=0, $nullmailer=0, $semaphore=0;
 my $var, $figfile = "./genpuppet.conf";
 my @atomic = 
-    [ 'ensure', 'mode', 'owner', 'group', 'source', 'content', 'logoutput' ];
+    ( ensure, mode, owner, group, source, content, logoutput );
 
 my @metaparms = [ 'before', 'require' ];
 
@@ -31,16 +31,6 @@ printf FP "class $classname {\n";
 do_toplevel();
 get_types();
 write_manifest();
-
-#get_packages();
-#write_packages();
-#get_services();
-#write_services();
-#get_files();
-#write_files();
-#get_execs();
-#write_execs();
-
 write_swatch();
 
 # write end class
@@ -53,12 +43,12 @@ close FP;
 #
 #
 sub load_config {
-    my @art;
+    my @ary;
 
     open (FIGS, "$figfile") || die ("Error opening $figfile\n");
-    @art = <FIGS>;
+    @ary = <FIGS>;
     close (FIGS);
-    return (@art);
+    return (@ary);
 }
 
 
@@ -124,242 +114,58 @@ sub do_toplevel {
 
 
 #
-# get all package resources and their metaparameters
-#
-sub get_packages {
-    my $pname, $var;
-
-    print "Package name? ";
-    chomp ($pname = <>);
-
-    while ($pname) {
-        my @before = (), @require = ();
-
-        print "ensure => ";
-        chomp ($resources{'package'}->{$pname}->{'ensure'} = <>);
-
-        print "before => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@before, $var);
-
-            print "before => ";
-            chomp ($var = <>);
-        }
-        if (@before) {
-            @{ $resources{'package'}->{$pname}->{'before'} } = @before;
-        }
-
-        print "require => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@require, $var);
-
-            print "require => ";
-            chomp ($var = <>);
-        }
-        if (@require) {
-            @{ $resources{'package'}->{$pname}->{'require'} } = @require;
-        }
-
-        print "Package name? ";
-        chomp ($pname = <>);
-    }
-}
-# end get_packages()
-
-
-#
-# write package stanzas
-#
-sub write_packages {
-    foreach my $var (reverse keys %{ $resources{'package'} }) {
-        printf FP "    package { '$var':\n";
-        printf FP "        ensure => $resources{'package'}{$var}{'ensure'},\n";
-    
-        # do before =>
-        #
-        if ($resources{'package'}{$var}{'before'}) {
-            my @ary = @{ $resources{'package'}{$var}{'before'} };
-    
-            printf FP "        before => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-    
-        # do require =>
-        #
-        if ($resources{'package'}{$var}{'require'}) {
-            my @ary = @{ $resources{'package'}{$var}{'require'} };
-    
-            printf FP "        require => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-        printf FP "    }\n";
-    }
-    printf FP "\n\n";
-}
-# end write_packages()
-
-
 #
 #
-#
-sub get_services {
-    my $sname, $var;
+sub get_types {
+    while (@figs) {
+        my @before = (), @require = (), @savep = ();
+        my $rsname, $resp;
 
-    print "Service name? ";
-    chomp ($sname = <>);
+        my $line  = shift (@figs);
+        my @x     = split (": ", $line);
+        my $rs    = @x[0];
+        my @savep = split (", ", @x[1]);
 
-    while ($sname) {
-        my @before = (), @require = ();
+        print "${rs}? ";
+        chomp($rsname = <>);
 
-        print "ensure => ";
-        chomp ($resources{'service'}->{$sname}->{'ensure'} = <>);
+        while ($rsname) {
+            my @params = @savep;
+            chomp(@params);
 
-        print "before => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@before, $var);
+            while (@params) {
+                my @ary = ();
+                my $attr = shift (@params);
 
-            print "before => ";
-            chomp ($var = <>);
-        }
-        if (@before) {
-            @{ $resources{'service'}->{$sname}->{'before'} } = @before;
-        }
+                print "${attr} => ";
+                chomp ($resp = <>);
 
-        print "require => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@require, $var);
-
-            print "require => ";
-            chomp ($var = <>);
-        }
-        if (@require) {
-            @{ $resources{'service'}->{$sname}->{'require'} } = @require;
-        }
-
-        print "Service name? ";
-        chomp ($sname = <>);
-    }
-}
-# end get_services()
-
-#
-# write service stanzas
-#
-sub write_services {
-    foreach my $var (reverse keys %{ $resources{'service'} }) {
-        printf FP "    service { '$var':\n";
-        printf FP "        ensure => $resources{'service'}{$var}{'ensure'},\n";
-    
-        # do before =>
-        #
-        if ($resources{'service'}{$var}{'before'}) {
-            my @ary = @{ $resources{'service'}{$var}{'before'} };
-    
-            printf FP "        before => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-    
-        # do require =>
-        #
-        if ($resources{'service'}{$var}{'require'}) {
-            my @ary = @{ $resources{'service'}{$var}{'require'} };
-    
-            printf FP "        require => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-        printf FP "    }\n";
-    }
-    printf FP "\n\n";
-}
-# end write_services()
-
-
-#       
-# get all file resources and their metaparameters
-#       
-sub get_files {
-    my $fname;
-    my $var;
-
-    print "File path? ";
-    chomp ($fname = <>);
-
-    while ($fname) {
-        my @before = (), @require = ();
-
-        print "ensure => ";
-        chomp ($resources{'file'}->{$fname}->{'ensure'} = <>);
-
-        print "owner => ";
-        chomp ($resources{'file'}->{$fname}->{'owner'} = <>);
-
-        print "group => ";
-        chomp ($resources{'file'}->{$fname}->{'group'} = <>);
-
-        print "mode => ";
-        chomp ($resources{'file'}->{$fname}->{'mode'} = <>);
-
-        print "source => ";
-        chomp ($resources{'file'}->{$fname}->{'source'} = <>);
-
-        print "content => ";
-        chomp ($resources{'file'}->{$fname}->{'content'} = <>);
- 
-        print "before => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@before, $var);
+                if (grep /$attr/, @atomic) { 
+                    if ($resp) { $resources{$rs}->{$rsname}->{$attr} = $resp; }
+                }
+                else {
+                    while ($resp) {
+                        push (@ary, $resp);
                 
-            print "before => ";        
-            chomp ($var = <>);
-        }   
-        if (@before) {
-            @{ $resources{'file'}->{$fname}->{'before'} } = @before;
-        } 
-        
-        print "require => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@require, $var);
-            
-            print "require => ";
-            chomp ($var = <>);         
-        }   
-        if (@require) {        
-            @{ $resources{'file'}->{$fname}->{'require'} } = @require;
+                        print "${attr} => ";        
+                        chomp ($resp = <>);
+                    }   
+                    if (@ary) {
+                        @{ $resources{$rs}->{$rsname}->{$attr} } = @ary;
+                    } 
+                }
+            }
+            print "${rs}? ";
+            chomp($rsname = <>);
         }
-   
-        print "File path? ";
-        chomp ($fname = <>);
-    }
-} 
-# end get_files()
+    } # end while
+} # end get_types()
 
 
 #
-# write file stanzas
 #
-sub write_files {
+#
+sub write_manifest {
     foreach my $var (reverse keys %{ $resources{'file'} }) {
         printf FP "    file { '$var':\n";
 
@@ -416,194 +222,6 @@ sub write_files {
         printf FP "    }\n";
     }
     printf FP "\n\n";
-}
-# end write_files()
-
-#
-#
-#
-sub get_execs {
-    my $exec, $var;
-
-    print "Exec name? ";
-    chomp ($exec = <>);
-
-    while ($exec) {
-        my @before = (), @require = ();
-
-        print "command => ";
-        chomp ($resources{'exec'}->{$exec}->{'command'} = <>);
-
-        print "logoutput => ";
-        chomp ($resources{'exec'}->{$exec}->{'logoutput'} = <>);
-
-        print "onlyif => ";
-        chomp ($resources{'exec'}->{$exec}->{'onlyif'} = <>);
-
-        print "unless => ";
-        chomp ($resources{'exec'}->{$exec}->{'unless'} = <>);
-
-        print "creates => ";
-        chomp ($resources{'exec'}->{$exec}->{'creates'} = <>);
-
-        print "before => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@before, $var);
-                
-            print "before => ";        
-            chomp ($var = <>);
-        }   
-        if (@before) {
-            @{ $resources{'exec'}->{$exec}->{'before'} } = @before;
-        } 
-        
-        print "require => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@require, $var);
-            
-            print "require => ";
-            chomp ($var = <>);         
-        }   
-        if (@require) {        
-            @{ $resources{'exec'}->{$exec}->{'require'} } = @require;
-        }
-   
-        print "Exec name? ";
-        chomp ($exec = <>);
-    }
-}
-# end get_execs()
-
-
-#
-#
-#
-sub write_execs {
-    foreach my $var (reverse keys %{ $resources{'exec'} }) {
-        printf FP "    exec { '$var':\n";
-
-        if ($resources{'exec'}{$var}{'command'}) {
-            printf FP 
-            "        command => '$resources{'exec'}{$var}{'command'}',\n";
-        }
-        if ($resources{'exec'}{$var}{'logoutput'}) {
-            printf FP 
-            "        logoutput => '$resources{'exec'}{$var}{'logoutput'}',\n";
-        }
-        if ($resources{'exec'}{$var}{'onlyif'}) {
-            printf FP 
-            "        onlyif => '$resources{'exec'}{$var}{'onlyif'}',\n";
-        }
-        if ($resources{'exec'}{$var}{'unless'}) {
-            printf FP 
-            "        unless => '$resources{'exec'}{$var}{'unless'}',\n";
-        }
-        if ($resources{'exec'}{$var}{'creates'}) {
-            printf FP 
-            "        creates => '$resources{'exec'}{$var}{'creates'}',\n";
-        }
-
-        # do before =>
-        #
-        if ($resources{'exec'}{$var}{'before'}) {
-            my @ary = @{ $resources{'exec'}{$var}{'before'} };
-
-            printf FP "        before => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-
-        # do require =>
-        #
-        if ($resources{'exec'}{$var}{'require'}) {
-            my @ary = @{ $resources{'exec'}{$var}{'require'} };
-
-            printf FP "        require => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-        printf FP "    }\n";
-    }
-    printf FP "\n\n";
-}
-# end write_execs()
-
-
-
-
-#
-#
-#
-sub get_types {
-    my $fname, $var;
-
-
-
-    print "File path? ";
-    chomp ($fname = <>);
-
-    while (@figs) {
-        my @before = (), @require = ();
-        my $line = shift (@figs);
-        my @x = split (": ", $line);
-        my $type = @x[0];
-        my @params = split (", ", @x[1]);
-
-        print "$type => ";
-        my $resp = chomp(<>);
-
-        while (@params) {
-        my $p = shift (@params);
-# if params in atomic, do
-
-        $resources{$type}->{$resp}->{$p} = $resp;
-
-# if params ! in atomic, do
-
- 
-        print "before => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@before, $var);
-                
-            print "before => ";        
-            chomp ($var = <>);
-        }   
-        if (@before) {
-            @{ $resources{'file'}->{$fname}->{'before'} } = @before;
-        } 
-        
-        print "require => ";
-        chomp ($var = <>);
-        while ($var) {
-            push (@require, $var);
-            
-            print "require => ";
-            chomp ($var = <>);         
-        }   
-        if (@require) {        
-            @{ $resources{'file'}->{$fname}->{'require'} } = @require;
-        }
-   
-        print "File path? ";
-        chomp ($fname = <>);
-    }
-} # end get_types()
-
-
-
-#
-#
-#
-sub write_manifest {
 } # end write_manifest()
 
 
