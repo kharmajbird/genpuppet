@@ -7,7 +7,6 @@ our @configs, @requires, @includes;
 our $manifest, $classname;
 our $include=0, $nullmailer=0, $semaphore=0;
 my $var, $figfile = "./genpuppet.conf";
-#my @atomic = ( ensure, mode, owner, group, source, content, logoutput );
 my @metaparms = ('before','require','subscribe','notify','recipient','options');
 
 
@@ -78,10 +77,8 @@ sub do_toplevel {
 
     print "Use class nullmailer? [no] "; chomp ($var = <>);
     if ($var) {
-        print "adminaddr => ";
-        chomp ($a = <>);
-        print "remoterelay => ";
-        chomp ($r = <>);
+        print "adminaddr => "; chomp ($a = <>);
+        print "remoterelay => "; chomp ($r = <>);
 
         printf FP "    class { 'nullmailer':\n";
 	printf FP "        adminaddr => '$a',\n";
@@ -106,8 +103,7 @@ sub get_resources {
         my $rs    = @x[0];
         my @savep = split (", ", @x[1]);
 
-        print "${rs}? ";
-        chomp($rsname = <>);
+        print "$rs? "; chomp($rsname = <>);
 
         while ($rsname) {
             my @params = @savep;
@@ -117,10 +113,8 @@ sub get_resources {
                 my @ary = ();
                 my $attr = shift (@params);
 
-                print "${attr} => ";
-                chomp ($resp = <>);
+                print "${attr} => "; chomp ($resp = <>);
 
-                #if (grep /$attr/, @atomic) { 
                 if (! grep /$attr/, @metaparms) { 
                     if ($resp) { $resources{$rs}->{$rsname}->{$attr} = $resp; }
                 }
@@ -128,16 +122,14 @@ sub get_resources {
                     while ($resp) {
                         push (@ary, $resp);
                 
-                        print "${attr} => ";        
-                        chomp ($resp = <>);
+                        print "$attr => ";        chomp ($resp = <>);
                     }   
                     if (@ary) {
                         @{ $resources{$rs}->{$rsname}->{$attr} } = @ary;
                     } 
                 }
             }
-            print "${rs}? ";
-            chomp($rsname = <>);
+            print "$rs? "; chomp($rsname = <>);
         }
         print "\n";
     } # end while
