@@ -3,33 +3,27 @@
 use Data::Dumper;
 
 our %types, %resources;
-our @figs, @requires, @includes;
+our @configs, @requires, @includes;
 our $manifest, $classname;
 our $include=0, $nullmailer=0, $semaphore=0;
 my $var, $figfile = "./genpuppet.conf";
-my @atomic = 
-    ( ensure, mode, owner, group, source, content, logoutput );
-
-my @metaparms = [ 'before', 'require' ];
+#my @atomic = ( ensure, mode, owner, group, source, content, logoutput );
+my @metaparms = ('before','require','subscribe','notify','recipient','options','groups');
 
 
 #
 # start genpuppet.pl
 #
-
-
-print "Name of manifest? ";
-chomp ($manifest = <>);
+print "Name of manifest? "; chomp ($manifest = <>);
 open FP, ">$manifest";
 
-print "Name of class? ";
-chomp ($classname = <>);
+print "Name of class? "; chomp ($classname = <>);
 printf FP "class $classname {\n";
 
-@figs = load_config();
+@configs = load_config();
 
 do_toplevel();
-get_types();
+get_resources();
 write_manifest();
 write_swatch();
 
@@ -39,9 +33,6 @@ printf FP "}\n";
 close FP;
 
 
-#
-#
-#
 sub load_config {
     my @ary;
 
@@ -52,48 +43,40 @@ sub load_config {
 }
 
 
-
 #
 # Get as many top-level requires and includes as necessary
-# Grok class nullmailer or exec set-semaphore options
+# Grok class nullmailer params
 #
 sub do_toplevel {
     my $a, $r;
 
-    print "Top level require? ";
-    chomp ($var = <>);
-
+    print "Top level require? "; chomp ($var = <>);
     while ($var) {
         push (@requires, $var);
-        print "Top level require? ";
-        chomp ($var = <>);
+        print "Top level require? "; chomp ($var = <>);
     }
     while (@requires) {
-        my $inc = shift (@requires);
+        $var = shift (@requires);
 
-        printf FP "    require $inc\n";
+        printf FP "    require $var\n";
     }
-    if (@requires) { printf FP "\n"; }
+    if ($var) { printf FP "\n"; }
 
 
-    print "Top level include? ";
-    chomp ($var = <>);
-
+    print "Top level include? "; chomp ($var = <>);
     while ($var) {
         push (@includes, $var);
-        print "Top level include? ";
-        chomp ($var = <>);
+        print "Top level include? "; chomp ($var = <>);
     }
     while (@includes) {
-        my $inc = shift (@includes);
+        $var = shift (@includes);
 
-        printf FP "    include $inc\n";
+        printf FP "    include $var\n";
     }
-    if (@includes) { printf FP "\n"; }
+    if ($var) { printf FP "\n"; }
 
 
-    print "Use class nullmailer? [no] ";
-    chomp ($var = <>);
+    print "Use class nullmailer? [no] "; chomp ($var = <>);
     if ($var) {
         print "adminaddr => ";
         chomp ($a = <>);
@@ -106,19 +89,16 @@ sub do_toplevel {
         printf FP "    }\n\n";
     }
 
-    print "Use exec set-semaphore? [no] ";
-    chomp ($var = <>);
+    print "Use exec set-semaphore? [no] "; chomp ($var = <>);
     if ($var) { $semaphore=1; }
 }
 # end do_toplevel()
 
 
-#
-#
-#
-sub get_types {
+sub get_resources {
+    my @figs = @configs;
+
     while (@figs) {
-        my @before = (), @require = (), @savep = ();
         my $rsname, $resp;
 
         my $line  = shift (@figs);
@@ -140,7 +120,8 @@ sub get_types {
                 print "${attr} => ";
                 chomp ($resp = <>);
 
-                if (grep /$attr/, @atomic) { 
+                #if (grep /$attr/, @atomic) { 
+                if (! grep /$attr/, @metaparms) { 
                     if ($resp) { $resources{$rs}->{$rsname}->{$attr} = $resp; }
                 }
                 else {
@@ -158,77 +139,55 @@ sub get_types {
             print "${rs}? ";
             chomp($rsname = <>);
         }
+        print "\n";
     } # end while
-} # end get_types()
+} # end get_resources()
 
 
-#
-#
-#
 sub write_manifest {
-    foreach my $var (reverse keys %{ $resources{'file'} }) {
-        printf FP "    file { '$var':\n";
+    my @figs = @configs;
 
-        if ($resources{'file'}{$var}{'ensure'}) {
-            printf FP 
-            "        ensure => '$resources{'file'}{$var}{'ensure'}',\n";
-        }
-        if ($resources{'file'}{$var}{'owner'}) {
-            printf FP 
-            "        owner => '$resources{'file'}{$var}{'owner'}',\n";
-        }
-        if ($resources{'file'}{$var}{'group'}) {
-            printf FP 
-            "        group => '$resources{'file'}{$var}{'group'}',\n";
-        }
-        if ($resources{'file'}{$var}{'mode'}) {
-            printf FP 
-            "        mode => '$resources{'file'}{$var}{'mode'}',\n";
-        }
-        if ($resources{'file'}{$var}{'source'}) {
-            printf FP 
-            "        source => '$resources{'file'}{$var}{'source'}',\n";
-        }
-        if ($resources{'file'}{$var}{'content'}) {
-            printf FP 
-            "        content => $resources{'file'}{$var}{'content'},\n";
-        }
+    while (@figs) {
+        my $line  = shift (@figs);
+        my @x     = split (": ", $line);
+        my $rs    = @x[0];
+        my @savep = split (", ", @x[1]);
 
-        # do before =>
-        #
-        if ($resources{'file'}{$var}{'before'}) {
-            my @ary = @{ $resources{'file'}{$var}{'before'} };
 
-            printf FP "        before => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
+        foreach my $rsname (reverse keys %{ $resources{$rs} }) {
+            my @params = @savep;
+            chomp(@params);
+
+            printf FP "    $rs { '$rsname':\n";
+
+            while (@params) {
+                my $attr = shift (@params);
+
+                if (grep /$attr/, @metaparms) { 
+                    if (defined $resources{$rs}{$rsname}{$attr}) {
+                        printf FP "        $attr => [\n";
+
+                        while (@{ $resources{$rs}{$rsname}{$attr} }) {
+                            my $mp = 
+                                shift (@{ $resources{$rs}{$rsname}{$attr} });
+
+                            printf FP "            $mp,\n";
+                        }
+                        printf FP "        ],\n";
+                    }
+                }
+                elsif ($resources{$rs}{$rsname}{$attr}) {
+                        printf FP
+                        "        $attr => $resources{$rs}{$rsname}{$attr},\n";
+                }
             }
-            printf FP "        ],\n";
+        print FP "    }\n";
         }
-
-        # do require =>
-        #
-        if ($resources{'file'}{$var}{'require'}) {
-            my @ary = @{ $resources{'file'}{$var}{'require'} };
-
-            printf FP "        require => [\n";
-            while (@ary) {
-                my $bf = shift (@ary);
-                printf FP "            $bf,\n";
-            }
-            printf FP "        ],\n";
-        }
-        printf FP "    }\n";
     }
-    printf FP "\n\n";
+    print FP "\n\n";
 } # end write_manifest()
 
 
-
-#
-#
-#
 sub write_swatch {
     return if ($semaphore);
 }
