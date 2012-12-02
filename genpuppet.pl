@@ -8,7 +8,7 @@ our $manifest, $classname;
 our $include=0, $nullmailer=0, $semaphore=0;
 my $var, $figfile = "./genpuppet.conf";
 #my @atomic = ( ensure, mode, owner, group, source, content, logoutput );
-my @metaparms = ('before','require','subscribe','notify','recipient','options','groups');
+my @metaparms = ('before','require','subscribe','notify','recipient','options');
 
 
 #
@@ -178,7 +178,7 @@ sub write_manifest {
                 }
                 elsif ($resources{$rs}{$rsname}{$attr}) {
                         printf FP
-                        "        $attr => $resources{$rs}{$rsname}{$attr},\n";
+                        "        $attr => '$resources{$rs}{$rsname}{$attr}',\n";
                 }
             }
         print FP "    }\n";
