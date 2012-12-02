@@ -1,11 +1,19 @@
-genpuppet is a script to automatically generate a puppet manifest based on
-a series of user inputs.  Think of it as a kernel "make config" for puppet.
+genpuppet is a script to automatically generate a puppet manifest based
+on a series of user inputs.  Think of it as a kernel "make config"
+for puppet.
 
-With genpuppet, one can quickly create a custom manifest without worrying
-so much about syntax and spacing.
+Let's face it... when writing puppet manifests, one has to enter the
+same contructs over and over again-- space space space space file brace
+quote name endquote colon enter... space space space space space space
+space space ensure => whatever comma enter... space space space space etc.
 
-Save the time you would normally spend writing a manifest from scratch and 
-use that time to debug that circular dependency you've been putting off ;)
+But you say you already have your manifest visualized? Well all you
+really need to do is give the parameters for whatever resource type
+you're using.
+
+With genpuppet, the most frequently used resources are prompted for so
+one can quickly generate a working manifest without having to concentrate
+on syntax and spacing.
 
 
 
@@ -13,39 +21,17 @@ GENPUPPET
 
 Features:
 
-*  Creates resource "stanzas" for package, service, file, and exec
-*  Prompts for the most common metaparameters of those resources
+*  Creates resource "stanzas" for package, service, file, exec and others
+*  Prompts for the most common parameters of those resources
 *  Manages commas and bracket/brace placement for you
 *  Generates puppet code that is immediately useable
+*  Extendable and supports all resource types
 
 
-Shortcomings:
+Caveats:
 
 *  Single quotes are used exclusively.
 
    If you need to quote a variable, edit the generated manifest and replace 
    the single quotes around your variable with double quotes.
 
-
-*  Many resources are still unsupported.
-
-   Only the basic resources are currently handled, such as the ones you 
-   might find on a cheat sheet.  Nothing prevents me or anyone else from 
-   extending genpuppet to handle any other resource type except...
-
-
-*  The code is nothing to write home about.  
-
-   It gets the job done, that's it.  Perl enthusiasts may cringe at some 
-   of my barbaric techniques, and there is a lot of near-duplication of
-   code.  I'm sure there is a better, more slick way of accomplishing this
-   by using parameters, but it already works for me and it didn't take
-   long to write.  If I find I want to add another resource, however, I
-   will be looking at and taking suggestions for how to make the script
-   more efficient.
-
-
-I encourage the puppet community to contribute their suggestions and
-changes for this project.  Genpuppet has the potential to become a very useful 
-and robust tool within a puppetmaster's kit.  The basics are already here, 
-but there is a lot more that can be done to make it a better tool.
