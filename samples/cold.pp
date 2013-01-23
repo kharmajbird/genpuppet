@@ -63,8 +63,6 @@ class common::cold {
         ensure => 'exists',
         require => [
             Service['remote-control'],
-            File['care-package'],
-            File['couch'],
         ],
     }
     exec { 'blow-nose':
